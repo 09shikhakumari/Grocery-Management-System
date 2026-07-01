@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <limits>
+
 using namespace std;
 
 class Grocery
@@ -8,12 +11,59 @@ private:
     string name[100];
     float price[100];
     int quantity[100];
-    int count = 0;
+    int count;
 
 public:
+    Grocery()
+    {
+        count = 0;
+        loadFromFile();
+    }
+
+    void loadFromFile()
+    {
+        ifstream fin("products.txt");
+
+        if (!fin)
+            return;
+
+        count = 0;
+
+        while (count < 100 &&
+               fin >> id[count]
+                   >> name[count]
+                   >> price[count]
+                   >> quantity[count])
+        {
+            count++;
+        }
+
+        fin.close();
+    }
+
+    void saveToFile()
+    {
+        ofstream fout("products.txt");
+
+        for (int i = 0; i < count; i++)
+        {
+            fout << id[i] << " "
+                 << name[i] << " "
+                 << price[i] << " "
+                 << quantity[i] << endl;
+        }
+
+        fout.close();
+    }
 
     void addProduct()
     {
+        if (count >= 100)
+        {
+            cout << "\nStorage Full!\n";
+            return;
+        }
+
         cout << "\nEnter Product ID : ";
         cin >> id[count];
 
@@ -28,6 +78,8 @@ public:
 
         count++;
 
+        saveToFile();
+
         cout << "\nProduct Added Successfully!\n";
     }
 
@@ -39,9 +91,9 @@ public:
             return;
         }
 
-        cout << "\n---------------------------------------------\n";
+        cout << "\n---------------------------------\n";
         cout << "ID\tName\tPrice\tQuantity\n";
-        cout << "---------------------------------------------\n";
+        cout << "---------------------------------\n";
 
         for (int i = 0; i < count; i++)
         {
@@ -56,31 +108,32 @@ public:
     {
         int searchId;
 
-        cout << "\nEnter Product ID to Search : ";
+        cout << "\nEnter Product ID : ";
         cin >> searchId;
 
         for (int i = 0; i < count; i++)
         {
             if (id[i] == searchId)
             {
-                cout << "\nProduct Found\n";
-                cout << "ID       : " << id[i] << endl;
-                cout << "Name     : " << name[i] << endl;
-                cout << "Price    : " << price[i] << endl;
+                cout << "\nFound\n";
+
+                cout << "ID : " << id[i] << endl;
+                cout << "Name : " << name[i] << endl;
+                cout << "Price : " << price[i] << endl;
                 cout << "Quantity : " << quantity[i] << endl;
 
                 return;
             }
         }
 
-        cout << "\nProduct Not Found.\n";
+        cout << "\nProduct Not Found\n";
     }
 
     void updateProduct()
     {
         int updateId;
 
-        cout << "\nEnter Product ID to Update : ";
+        cout << "\nEnter Product ID : ";
         cin >> updateId;
 
         for (int i = 0; i < count; i++)
@@ -96,20 +149,21 @@ public:
                 cout << "Enter New Quantity : ";
                 cin >> quantity[i];
 
-                cout << "\nProduct Updated Successfully!\n";
+                saveToFile();
 
+                cout << "\nUpdated Successfully\n";
                 return;
             }
         }
 
-        cout << "\nProduct Not Found.\n";
+        cout << "\nProduct Not Found\n";
     }
 
     void deleteProduct()
     {
         int deleteId;
 
-        cout << "\nEnter Product ID to Delete : ";
+        cout << "\nEnter Product ID : ";
         cin >> deleteId;
 
         for (int i = 0; i < count; i++)
@@ -126,12 +180,14 @@ public:
 
                 count--;
 
-                cout << "\nProduct Deleted Successfully!\n";
+                saveToFile();
+
+                cout << "\nDeleted Successfully\n";
                 return;
             }
         }
 
-        cout << "\nProduct Not Found.\n";
+        cout << "\nProduct Not Found\n";
     }
 };
 
@@ -142,7 +198,10 @@ int main()
 
     do
     {
-        cout << "\n\n===== GROCERY MANAGEMENT SYSTEM =====\n";
+        system("cls");     // Windows
+        // system("clear"); // Linux
+
+        cout << "\n===== GROCERY MANAGEMENT SYSTEM =====\n";
         cout << "1. Add Product\n";
         cout << "2. Display Products\n";
         cout << "3. Search Product\n";
@@ -153,34 +212,48 @@ int main()
         cout << "\nEnter Choice : ";
         cin >> choice;
 
+        if (cin.fail())
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            choice = 0;
+        }
+
         switch (choice)
         {
-            case 1:
-                g.addProduct();
-                break;
+        case 1:
+            g.addProduct();
+            break;
 
-            case 2:
-                g.displayProducts();
-                break;
+        case 2:
+            g.displayProducts();
+            break;
 
-            case 3:
-                g.searchProduct();
-                break;
+        case 3:
+            g.searchProduct();
+            break;
 
-            case 4:
-                g.updateProduct();
-                break;
+        case 4:
+            g.updateProduct();
+            break;
 
-            case 5:
-                g.deleteProduct();
-                break;
+        case 5:
+            g.deleteProduct();
+            break;
 
-            case 6:
-                cout << "\nThank You!\n";
-                break;
+        case 6:
+            cout << "\nThank You!\n";
+            break;
 
-            default:
-                cout << "\nInvalid Choice!\n";
+        default:
+            cout << "\nInvalid Choice!\n";
+        }
+
+        if (choice != 6)
+        {
+            cout << "\nPress Enter to continue...";
+            cin.ignore();
+            cin.get();
         }
 
     } while (choice != 6);
